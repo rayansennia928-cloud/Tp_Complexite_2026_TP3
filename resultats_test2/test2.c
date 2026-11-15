@@ -1,31 +1,3 @@
-/*
- * Exercice 2, partie 3 : mesures experimentales de sousMat1 et sousMat2.
- *
- * Pour CHAQUE point de mesure, les memes matrices A et B sont donnees a
- * toutes les fonctions : les comparaisons se font donc dans des conditions
- * strictement identiques. Les matrices generees ont toujours des lignes
- * triees (au sens large), ce qui est valide pour sousMat1 (qui n'exige rien)
- * comme pour sousMat2 (qui exige le tri).
- *
- * B est TOUJOURS absente de A (sinon la fonction s'arreterait des qu'elle
- * trouve B et la mesure serait faussee). Cette absence est garantie par
- * construction : la derniere case de B recoit une valeur qui n'existe pas
- * dans A (sentinelle), tout en gardant la derniere ligne de B triee.
- *
- * Deux scenarios :
- *   - aleatoire : valeurs aleatoires triees par ligne (cas "moyen")
- *   - pire cas  : A ne contient que des 0, B est faite de 0 sauf sa derniere
- *                 case (= 1). Chaque position candidate est comparee
- *                 presque en entier avant d'echouer.
- *
- * Fichiers produits (separateur ';', virgule decimale, temps en secondes) :
- *   resultats_exo2_varier_A.csv            (scenario aleatoire, n et m varient)
- *   resultats_exo2_varier_B.csv            (scenario aleatoire, np et mp varient)
- *   resultats_exo2_varier_A_pire_cas.csv   (scenario pire cas, n et m varient)
- *   resultats_exo2_varier_B_pire_cas.csv   (scenario pire cas, np et mp varient)
- *
- * Usage : tache2_exo2.exe [graine] [--rapide]
- */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,11 +11,11 @@ bool sousMat2_v2(int n, int m, int **A, int np, int mp, int **B);
 #endif
 
 /* ---------- Parametres ---------- */
-#define VALEUR_MAX 10000     /* valeurs de A dans [0, VALEUR_MAX - 1] */
-#define TEMPS_MIN_S 0.3      /* duree minimale mesuree pour un point (secondes) */
-#define MAX_REPS (1 << 20)   /* garde-fou sur le nombre de repetitions */
+#define VALEUR_MAX 10000   
+#define TEMPS_MIN_S 0.3      
+#define MAX_REPS (1 << 20)   
 #define CSV_SEP ';'
-#define VIRGULE_DECIMALE 1   /* 1 : Excel francais ; 0 : point decimal */
+#define VIRGULE_DECIMALE 1   
 
 /* ---------- Fonctions testees ---------- */
 typedef bool (*Recherche)(int, int, int **, int, int, int **);
@@ -66,14 +38,14 @@ typedef struct { int n, m, np, mp; } Config;
 static void liberer(int **M, int n)
 {
     if (M == NULL) return;
-    for (int i = 0; i < n; i++) free(M[i]);   /* free(NULL) est sans danger */
+    for (int i = 0; i < n; i++) free(M[i]);  
     free(M);
 }
 
 static int **allouer(int n, int m)
 {
     if (n <= 0 || m <= 0) return NULL;
-    int **M = calloc((size_t)n, sizeof *M);   /* lignes initialisees a NULL */
+    int **M = calloc((size_t)n, sizeof *M);   
     if (M == NULL) return NULL;
     for (int i = 0; i < n; i++) {
         M[i] = malloc((size_t)m * sizeof **M);
@@ -82,7 +54,7 @@ static int **allouer(int n, int m)
     return M;
 }
 
-/* ---------- Generation des donnees (hors mesure) ---------- */
+/* ---------- Generation des donnees ---------- */
 
 static int comparer(const void *a, const void *b)
 {
@@ -94,7 +66,7 @@ static void remplirTrie(int **M, int n, int m)
 {
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) M[i][j] = rand() % VALEUR_MAX;
-        qsort(M[i], (size_t)m, sizeof(int), comparer);   /* tri hors mesure */
+        qsort(M[i], (size_t)m, sizeof(int), comparer);   
     }
 }
 
@@ -110,11 +82,11 @@ static void genererDonnees(Scenario s, int **A, int n, int m,
     if (s == SCEN_ALEATOIRE) {
         remplirTrie(A, n, m);
         remplirTrie(B, np, mp);
-        B[np - 1][mp - 1] = VALEUR_MAX;   /* sentinelle absente de A, ligne reste triee */
+        B[np - 1][mp - 1] = VALEUR_MAX;   
     } else {
         remplirConstante(A, n, m, 0);
         remplirConstante(B, np, mp, 0);
-        B[np - 1][mp - 1] = 1;            /* sentinelle absente de A, ligne reste triee */
+        B[np - 1][mp - 1] = 1;            
     }
 }
 
@@ -126,13 +98,7 @@ static bool lignesTriees(int **M, int n, int m)
     return true;
 }
 
-/* ---------- Mesure ---------- */
 
-/*
- * Seul l'appel a f() est entre les deux clock(). Si le total est < TEMPS_MIN_S,
- * on double le nombre de repetitions et on recommence ; on renvoie le temps
- * moyen par appel. Le resultat booleen de f est conserve pour verification.
- */
 static double mesurer(Recherche f, int n, int m, int **A, int np, int mp,
                       int **B, bool *resultat, int *reps_utilisees)
 {
@@ -218,7 +184,6 @@ fin:
     return code;
 }
 
-/* ---------- Une serie complete -> un fichier CSV ---------- */
 
 static int executerSerie(Scenario s, const char *fichier, const Config *cfg, int nb)
 {
@@ -279,7 +244,6 @@ int main(int argc, char *argv[])
             serieA[nbA++] = (Config){ n, n, 10, 10 };
     }
 
-    /* Serie B : n = m fixes, np = mp varient */
     Config serieB[16];
     int nbB = 0;
     {
