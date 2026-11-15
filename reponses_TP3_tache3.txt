@@ -1,0 +1,103 @@
+TP N°3 : Complexité polynomiale
+TÂCHE 3 : Graphiques, comparaisons et réponses aux questions
+
+EXERCICE 1 : PRODUIT DE DEUX MATRICES
+
+Question 5 : Graphe des variations de T par rapport à n
+
+Graphiques fournis :
+  - ex1_T_en_fonction_de_n.png : T en fonction de n, avec la courbe du
+    modèle théorique T = a.n³ (constante a calée sur les petites tailles,
+    n <= 1000, a = 1,35.10^-9 s).
+  - ex1_loglog.png : même courbe en échelle log-log, avec une droite de
+    pente 3 en référence.
+  - ex1_T_sur_n3.png : rapport T(n)/n³ (constant si le modèle en n³ était
+    parfait).
+
+Observations :
+  - Pour n <= 1000, les points suivent la courbe n³ : pente log-log
+    mesurée = 2,92 (proche de 3). Le rapport T/n³ reste à peu près
+    constant (entre 1,2 et 1,9 ns).
+  - Pour n > 1100, le temps croît nettement plus vite que n³ : T/n³ passe
+    d'environ 1,8 ns à 8,4 ns pour n = 1951. Entre n = 1142 (2,7 s) et
+    n = 1951 (62,5 s), la pente locale est d'environ 5,8.
+  - Sur l'ensemble des mesures, la pente log-log ajustée est de 3,57.
+
+
+Question 6 : Comparaison complexité théorique / expérimentale
+
+Y a-t-il concordance entre le modèle théorique et les mesures ?
+
+  - Pour les tailles petites et moyennes (n <= 1000) : OUI. Le temps
+    d'exécution croît en n³, comme prévu par l'analyse théorique Θ(n³).
+  - Pour les grandes tailles (n > 1100) : NON, les mesures s'écartent du
+    modèle : le temps augmente plus vite que n³.
+
+Explication probable (hypothèse, non vérifiée sur la machine de test) :
+la complexité théorique compte les opérations élémentaires, mais pas le
+coût des accès mémoire. Dans la boucle interne, l'accès à B[k][j] se fait
+colonne par colonne, ce qui provoque de nombreux défauts de cache dès que
+les matrices (3 matrices n x n d'entiers) ne tiennent plus dans le cache du
+processeur. Le coût moyen d'une opération n'est donc plus constant.
+
+Conclusion : le modèle Θ(n³) est confirmé en ordre de grandeur pour les
+tailles moyennes. Pour les grandes tailles, l'effet de la hiérarchie
+mémoire fait diverger les mesures du modèle théorique, qui ne tient pas
+compte de ce phénomène.
+
+
+EXERCICE 2 : RECHERCHE D'UNE SOUS-MATRICE
+
+Question 4 : Graphes des résultats de sousMat1 et sousMat2
+
+Deux scénarios ont été mesurés : cas moyen (données aléatoires triées par
+ligne, B absente de A) et pire cas (A remplie de 0, B remplie de 0 sauf le
+dernier élément égal à 1). Pour chacun, deux séries : variation de n = m
+(avec n' = m' = 10) et variation de n' = m' (avec n = m = 500).
+
+Graphiques fournis :
+  - ex2_A_cas_moyen.png  : cas moyen, n = m variable
+  - ex2_A_pire_cas.png   : pire cas, n = m variable
+  - ex2_B_cas_moyen.png  : cas moyen, n' = m' variable
+  - ex2_B_pire_cas.png   : pire cas, n' = m' variable
+(échelle logarithmique en ordonnée pour les deux cas moyens, car l'écart
+entre les deux fonctions est très grand)
+
+
+Comparaison et interprétation
+
+1) Cas moyen, n = m variable (n' = m' = 10)
+   - sousMat1 suit le modèle (n-n'+1)² : pente log-log mesurée = 1,82
+     (proche de 2, croissance quadratique en n).
+   - sousMat2 est presque linéaire : pente log-log = 1,28 (cohérent avec
+     n.log m).
+   - Pour n = m = 2000 : sousMat1 = 0,00984 s, sousMat2 = 0,000116 s,
+     soit sousMat2 environ 85 fois plus rapide.
+
+2) Cas moyen, n' = m' variable (n = m = 500)
+   - Les temps des deux fonctions diminuent quand n' augmente : le nombre
+     de positions de départ possibles (n-n'+1)(m-m'+1) diminue, et dans le
+     cas moyen le désaccord est détecté très tôt.
+   - sousMat2 reste beaucoup plus rapide que sousMat1 sur toute la série.
+
+3) Pire cas, n = m variable (n' = m' = 10)
+   - Les deux fonctions ont des temps très proches : pentes log-log de
+     2,31 (sousMat1) et 2,17 (sousMat2), c'est-à-dire un comportement
+     quadratique en n pour les deux.
+   - sousMat2 n'apporte aucun gain : la recherche dichotomique trouve la
+     première occurrence de 0 en début de ligne, puis toutes les positions
+     suivantes doivent être vérifiées, comme dans sousMat1.
+
+4) Pire cas, n' = m' variable (n = m = 500)
+   - Le temps augmente avec n', conformément au modèle
+     (n-n'+1)²·n'² (calé sur les mesures, environ 2 ns par comparaison
+     élémentaire). Les deux fonctions sont confondues.
+
+Points aberrants (bruit de mesure)
+   - sousMat2 pour n = 1200 (série "pire cas, n variable") : 0,449 s,
+     alors que la valeur pour n = 1400 est plus faible (0,300 s).
+   - sousMat2 pour n' = 200 (série "pire cas, n' variable") : 3,86 s, en
+     dessous de la valeur attendue d'après les autres points.
+   Ces écarts sont probablement dus au bruit de mesure (précision de la
+   fonction clock(), activité du système). Il est conseillé de les signaler
+   dans le rapport ou de refaire ces deux mesures.
